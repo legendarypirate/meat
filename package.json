@@ -1,0 +1,10 @@
+{
+  "name": "meat",
+  "private": true,
+  "scripts": {
+    "dev": "npm run server:dev",
+    "store:dev": "npm --prefix meat run dev",
+    "server:dev": "npm --prefix server run dev",
+    "admin:dev": "npm --prefix meatadmin run dev -- -p 3002"
+  }
+}
