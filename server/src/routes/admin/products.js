@@ -141,6 +141,11 @@ router.post("/", async (req, res, next) => {
 
     await saveProductImages(product.id, images);
 
+    const firstImageUrl = normalizeImages(images)[0]?.url;
+    if (firstImageUrl && !product.image) {
+      await product.update({ image: firstImageUrl });
+    }
+
     const created = await Product.findByPk(product.id, {
       include: [
         { model: Category, as: "category" },
@@ -174,6 +179,11 @@ router.put("/:id", async (req, res, next) => {
 
     if (images) {
       await saveProductImages(product.id, images);
+      const firstImageUrl = normalizeImages(images)[0]?.url;
+      if (firstImageUrl) {
+        updates.image = updates.image || firstImageUrl;
+        await product.update({ image: updates.image || firstImageUrl });
+      }
     }
 
     const updated = await Product.findByPk(product.id, {

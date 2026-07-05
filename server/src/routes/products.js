@@ -6,6 +6,12 @@ const router = Router();
 
 function formatProduct(product) {
   const json = product.toJSON();
+  const imageUrls = (json.images || [])
+    .sort((a, b) => a.sortOrder - b.sortOrder)
+    .map((i) => i.url)
+    .filter(Boolean);
+  const image = json.image || imageUrls[0] || "";
+
   return {
     id: String(json.id),
     slug: json.slug,
@@ -14,8 +20,8 @@ function formatProduct(product) {
     longDescription: json.longDescription,
     price: json.price,
     priceUnit: json.priceUnit,
-    image: json.image,
-    images: (json.images || []).sort((a, b) => a.sortOrder - b.sortOrder).map((i) => i.url),
+    image,
+    images: imageUrls.length > 0 ? imageUrls : image ? [image] : [],
     badge: json.badge,
     badgeVariant: json.badgeVariant,
     grade: json.grade,
