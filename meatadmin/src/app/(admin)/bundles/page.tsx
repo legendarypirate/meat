@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { api, type Product } from "@/lib/api";
@@ -19,6 +19,14 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ProductDrawer } from "@/components/admin/product-drawer";
 
 export default function BundlesPage() {
+  return (
+    <Suspense fallback={<p className="text-muted-foreground">Ачааллаж байна...</p>}>
+      <BundlesPageContent />
+    </Suspense>
+  );
+}
+
+function BundlesPageContent() {
   const searchParams = useSearchParams();
   const [bundles, setBundles] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
