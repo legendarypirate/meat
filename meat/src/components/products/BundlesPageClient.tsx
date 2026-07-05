@@ -4,12 +4,12 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/products/ProductCard";
-import { products } from "@/data/products";
+import type { Product } from "@/types/product";
 import { filterProducts, type SortOption } from "@/lib/products";
 
 const ITEMS_PER_PAGE = 6;
 
-export function BundlesPageClient() {
+export function BundlesPageClient({ products }: { products: Product[] }) {
   const searchParams = useSearchParams();
   const queryParam = searchParams.get("q") ?? "";
   const [sort, setSort] = useState<SortOption>("featured");

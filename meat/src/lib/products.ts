@@ -1,4 +1,4 @@
-import type { Product } from "@/data/products";
+import type { Product } from "@/types/product";
 import type { MeatType } from "@/data/meatCategories";
 
 export type ProductCategory = Product["category"];

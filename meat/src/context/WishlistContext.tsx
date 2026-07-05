@@ -8,7 +8,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import { products, type Product } from "@/data/products";
+import type { Product } from "@/types/product";
+import { useProductCatalog } from "@/context/ProductCatalogContext";
 
 type WishlistContextValue = {
   items: Product[];
@@ -40,6 +41,7 @@ function saveWishlist(ids: string[]) {
 }
 
 export function WishlistProvider({ children }: { children: React.ReactNode }) {
+  const products = useProductCatalog();
   const [ids, setIds] = useState<string[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -74,7 +76,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       return [...prev, productId];
     });
     setTimeout(() => setToast(null), 3000);
-  }, []);
+  }, [products]);
 
   const removeItem = useCallback((productId: string) => {
     setIds((prev) => prev.filter((id) => id !== productId));
@@ -87,7 +89,7 @@ export function WishlistProvider({ children }: { children: React.ReactNode }) {
       ids
         .map((id) => products.find((p) => p.id === id))
         .filter((p): p is Product => p !== undefined),
-    [ids],
+    [ids, products],
   );
 
   const value = useMemo(

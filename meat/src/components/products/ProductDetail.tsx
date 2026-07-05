@@ -18,7 +18,7 @@ import { WishlistButton } from "@/components/wishlist/WishlistButton";
 import { isBundleProduct } from "@/data/bundles";
 import { BundleProductDetail } from "@/components/products/BundleProductDetail";
 import { formatPrice } from "@/lib/utils";
-import type { Product } from "@/data/products";
+import type { Product } from "@/types/product";
 
 const iconMap = {
   utensils: UtensilsCrossed,

@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/products/ProductCard";
-import { products } from "@/data/products";
+import type { Product } from "@/types/product";
 import type { MeatType } from "@/data/meatCategories";
 import { meatCategories } from "@/data/meatCategories";
 import {
@@ -37,7 +37,7 @@ const meatTypeTitles: Record<MeatType, string> = {
   yastai: "Ястай мах",
 };
 
-export function ProductsPageClient() {
+export function ProductsPageClient({ products }: { products: Product[] }) {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category") as ProductCategory | null;
   const typeParam = searchParams.get("type") as MeatType | null;

@@ -34,9 +34,12 @@ npm run dev
 
 ```bash
 cd meat
+cp .env.example .env.local   # NEXT_PUBLIC_API_URL=http://localhost:3001
 npm install
 npm run dev
 ```
+
+On production, set `NEXT_PUBLIC_API_URL` to your API URL and add the storefront origin to `CORS_ORIGINS` in `server/.env`.
 
 ## Environment
 

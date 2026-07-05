@@ -24,6 +24,9 @@ export function getBundleSavings(bundle: BundleInfo, bundlePrice: number) {
   return { savingsAmount, savingsPercent };
 }
 
-export function isBundleProduct(product: { category: string; bundle?: BundleInfo }) {
-  return product.category === "bundles" && Boolean(product.bundle);
+export function isBundleProduct(product: {
+  category?: string;
+  bundle?: BundleInfo;
+}) {
+  return product.category === "bundles" || Boolean(product.bundle);
 }

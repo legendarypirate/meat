@@ -9,7 +9,7 @@ import { useCart } from "@/context/CartContext";
 import { useWishlist } from "@/context/WishlistContext";
 import { isBundleProduct } from "@/data/bundles";
 import { formatPrice } from "@/lib/utils";
-import type { Product } from "@/data/products";
+import type { Product } from "@/types/product";
 
 export function WishlistItemsList() {
   const { items, removeItem, clearWishlist } = useWishlist();

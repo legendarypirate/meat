@@ -8,9 +8,11 @@ import {
   Testimonial,
 } from "@/components/home/HomeSections";
 import { FeaturedProducts, FeaturedBundles } from "@/components/products/ProductCard";
-import { products } from "@/data/products";
+import { fetchProducts } from "@/lib/api";
 
-export default function HomePage() {
+export default async function HomePage() {
+  const products = await fetchProducts().catch(() => []);
+
   return (
     <>
       <HeaderWrapper variant="home" showSearch />

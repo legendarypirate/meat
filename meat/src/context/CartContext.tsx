@@ -8,7 +8,8 @@ import {
   useMemo,
   useState,
 } from "react";
-import { products, type Product } from "@/data/products";
+import type { Product } from "@/types/product";
+import { useProductCatalog } from "@/context/ProductCatalogContext";
 
 export type CartItem = {
   productId: string;
@@ -55,6 +56,7 @@ function saveCart(items: CartItem[]) {
 }
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
+  const products = useProductCatalog();
   const [items, setItems] = useState<CartItem[]>([]);
   const [hydrated, setHydrated] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
@@ -95,7 +97,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
       setToast(`${product.name} сагсанд нэмэгдлээ`);
       setTimeout(() => setToast(null), 3000);
     },
-    [],
+    [products],
   );
 
   const removeItem = useCallback((productId: string, size?: string) => {
@@ -133,7 +135,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
           return product ? { ...item, product } : null;
         })
         .filter((item): item is CartLineItem => item !== null),
-    [items],
+    [items, products],
   );
 
   const itemCount = useMemo(
