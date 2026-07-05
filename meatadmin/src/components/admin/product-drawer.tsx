@@ -52,8 +52,6 @@ const defaultBundle: BundleData = {
   regularOrderDrawbacks: [],
 };
 
-const productCategories = ["beef", "dry-aged"];
-
 export function ProductDrawer({ open, productId, variant, onClose, onSaved }: Props) {
   const isBundle = variant === "bundle";
   const [categories, setCategories] = useState<Category[]>([]);
@@ -83,6 +81,16 @@ export function ProductDrawer({ open, productId, variant, onClose, onSaved }: Pr
       api.getProducts({ isBundle: false }).then(setCatalogProducts).catch(console.error);
     }
   }, [open, isBundle]);
+
+  useEffect(() => {
+    if (!open || isBundle || productId || categories.length === 0) return;
+    const productCats = categories.filter((c) => c.slug !== "bundles");
+    if (productCats.length === 0) return;
+    setForm((prev) => {
+      if (productCats.some((c) => c.slug === prev.categorySlug)) return prev;
+      return { ...prev, categorySlug: productCats[0].slug };
+    });
+  }, [open, isBundle, productId, categories]);
 
   useEffect(() => {
     if (!open) return;
@@ -180,7 +188,7 @@ export function ProductDrawer({ open, productId, variant, onClose, onSaved }: Pr
   }
 
   const visibleCategories = categories.filter((c) =>
-    isBundle ? c.slug === "bundles" : productCategories.includes(c.slug),
+    isBundle ? c.slug === "bundles" : c.slug !== "bundles",
   );
 
   return (
