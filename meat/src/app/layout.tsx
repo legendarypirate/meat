@@ -6,6 +6,8 @@ import { ProductCatalogProvider } from "@/context/ProductCatalogContext";
 import { fetchProducts } from "@/lib/api";
 import "./globals.css";
 
+export const dynamic = "force-dynamic";
+
 const nunito = Nunito({
   variable: "--font-nunito",
   subsets: ["latin", "cyrillic"],

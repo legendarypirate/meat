@@ -1,17 +1,17 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/products/ProductCard";
 import type { Product } from "@/types/product";
 import type { MeatType } from "@/data/meatCategories";
 import { meatCategories } from "@/data/meatCategories";
+import { fetchProductsClient } from "@/lib/api";
 import {
   filterProducts,
   type CutTypeFilter,
   type GradeFilter,
-  type ProductCategory,
   type SortOption,
 } from "@/lib/products";
 
@@ -26,7 +26,7 @@ const grades: GradeFilter[] = ["ПРЕМИУМ", "ХАТААСАН", "СОНГО
 
 const ITEMS_PER_PAGE = 6;
 
-const categoryTitles: Record<Exclude<ProductCategory, "bundles">, string> = {
+const categoryTitles: Record<string, string> = {
   beef: "Дээд зэрэглэлийн үхрийн мах",
   "dry-aged": "Удаан хатаасан мах",
 };
@@ -37,21 +37,55 @@ const meatTypeTitles: Record<MeatType, string> = {
   yastai: "Ястай мах",
 };
 
-export function ProductsPageClient({ products }: { products: Product[] }) {
+export function ProductsPageClient() {
   const searchParams = useSearchParams();
-  const categoryParam = searchParams.get("category") as ProductCategory | null;
+  const categoryParam = searchParams.get("category");
   const typeParam = searchParams.get("type") as MeatType | null;
   const queryParam = searchParams.get("q") ?? "";
 
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedCut, setSelectedCut] = useState<CutTypeFilter>("all");
   const [selectedGrades, setSelectedGrades] = useState<GradeFilter[]>([]);
   const [sort, setSort] = useState<SortOption>("featured");
   const [currentPage, setCurrentPage] = useState(1);
 
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    fetchProductsClient({
+      category: categoryParam ?? undefined,
+      type: typeParam ?? undefined,
+      q: queryParam || undefined,
+    })
+      .then((data) => {
+        if (!cancelled) setProducts(data);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Алдаа гарлаа");
+          setProducts([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [categoryParam, typeParam, queryParam]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [categoryParam, typeParam, queryParam, selectedCut, selectedGrades, sort]);
+
   const filtered = useMemo(
     () =>
       filterProducts(products, {
-        category: categoryParam,
         meatType: typeParam,
         cut: selectedCut,
         grades: selectedGrades,
@@ -59,7 +93,7 @@ export function ProductsPageClient({ products }: { products: Product[] }) {
         query: queryParam,
         excludeBundles: true,
       }),
-    [categoryParam, typeParam, selectedCut, selectedGrades, sort, queryParam],
+    [products, typeParam, selectedCut, selectedGrades, sort, queryParam],
   );
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
@@ -72,26 +106,24 @@ export function ProductsPageClient({ products }: { products: Product[] }) {
     setSelectedGrades((prev) =>
       prev.includes(grade) ? prev.filter((g) => g !== grade) : [...prev, grade],
     );
-    setCurrentPage(1);
   };
 
   const clearFilters = () => {
     setSelectedCut("all");
     setSelectedGrades([]);
     setSort("featured");
-    setCurrentPage(1);
   };
 
   const pageTitle = typeParam
     ? meatTypeTitles[typeParam]
     : categoryParam && categoryParam !== "bundles"
-      ? categoryTitles[categoryParam as Exclude<ProductCategory, "bundles">]
+      ? categoryTitles[categoryParam] ?? categoryParam
       : "Дээд зэрэглэлийн үхрийн мах";
 
   const activeCategoryLabel = typeParam
     ? meatCategories.find((c) => c.slug === typeParam)?.name
     : categoryParam && categoryParam !== "bundles"
-      ? categoryTitles[categoryParam]
+      ? categoryTitles[categoryParam] ?? categoryParam
       : null;
 
   return (
@@ -132,10 +164,7 @@ export function ProductsPageClient({ products }: { products: Product[] }) {
                     type="radio"
                     name="cutType"
                     checked={selectedCut === "all"}
-                    onChange={() => {
-                      setSelectedCut("all");
-                      setCurrentPage(1);
-                    }}
+                    onChange={() => setSelectedCut("all")}
                     className="h-4 w-4 accent-primary"
                   />
                   Бүгд
@@ -148,10 +177,7 @@ export function ProductsPageClient({ products }: { products: Product[] }) {
                       type="radio"
                       name="cutType"
                       checked={selectedCut === cut.value}
-                      onChange={() => {
-                        setSelectedCut(cut.value);
-                        setCurrentPage(1);
-                      }}
+                      onChange={() => setSelectedCut(cut.value)}
                       className="h-4 w-4 accent-primary"
                     />
                     {cut.label}
@@ -195,18 +221,21 @@ export function ProductsPageClient({ products }: { products: Product[] }) {
         <div className="flex-1">
           <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-muted">
-              Нийт{" "}
-              <span className="font-semibold text-foreground">
-                {filtered.length}
-              </span>{" "}
-              төрлийн мах харагдаж байна
+              {loading ? (
+                "Ачааллаж байна..."
+              ) : (
+                <>
+                  Нийт{" "}
+                  <span className="font-semibold text-foreground">
+                    {filtered.length}
+                  </span>{" "}
+                  төрлийн мах харагдаж байна
+                </>
+              )}
             </p>
             <select
               value={sort}
-              onChange={(e) => {
-                setSort(e.target.value as SortOption);
-                setCurrentPage(1);
-              }}
+              onChange={(e) => setSort(e.target.value as SortOption)}
               className="rounded-lg border border-border bg-white px-4 py-2 text-sm outline-none focus:border-primary"
             >
               <option value="featured">Эрэмбэлэх: Онцлох</option>
@@ -215,7 +244,17 @@ export function ProductsPageClient({ products }: { products: Product[] }) {
             </select>
           </div>
 
-          {paginated.length === 0 ? (
+          {error && (
+            <div className="mb-6 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+              API холболт амжилтгүй: {error}. NEXT_PUBLIC_API_URL тохиргоог шалгана уу.
+            </div>
+          )}
+
+          {loading ? (
+            <div className="rounded-xl bg-surface py-16 text-center text-muted">
+              Бүтээгдэхүүн ачааллаж байна...
+            </div>
+          ) : paginated.length === 0 ? (
             <div className="rounded-xl bg-surface py-16 text-center">
               <p className="text-lg font-semibold">Бүтээгдэхүүн олдсонгүй</p>
               <p className="mt-2 text-sm text-muted">
@@ -237,7 +276,7 @@ export function ProductsPageClient({ products }: { products: Product[] }) {
             </div>
           )}
 
-          {totalPages > 1 && (
+          {!loading && totalPages > 1 && (
             <div className="mt-12 flex items-center justify-center gap-2">
               <button
                 type="button"
@@ -248,27 +287,23 @@ export function ProductsPageClient({ products }: { products: Product[] }) {
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(
-                (page) => (
-                  <button
-                    key={page}
-                    type="button"
-                    onClick={() => setCurrentPage(page)}
-                    className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-colors ${
-                      page === currentPage
-                        ? "bg-primary text-white"
-                        : "border border-border text-muted hover:border-primary hover:text-primary"
-                    }`}
-                  >
-                    {page}
-                  </button>
-                ),
-              )}
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <button
+                  key={page}
+                  type="button"
+                  onClick={() => setCurrentPage(page)}
+                  className={`flex h-10 w-10 items-center justify-center rounded-full text-sm font-semibold transition-colors ${
+                    page === currentPage
+                      ? "bg-primary text-white"
+                      : "border border-border text-muted hover:border-primary hover:text-primary"
+                  }`}
+                >
+                  {page}
+                </button>
+              ))}
               <button
                 type="button"
-                onClick={() =>
-                  setCurrentPage((p) => Math.min(totalPages, p + 1))
-                }
+                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                 disabled={currentPage === totalPages}
                 className="flex h-10 w-10 items-center justify-center rounded-full border border-border text-muted transition-colors hover:border-primary hover:text-primary disabled:opacity-40"
                 aria-label="Next page"

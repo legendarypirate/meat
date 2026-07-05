@@ -2,7 +2,16 @@ import type { Product } from "@/types/product";
 import type { BundleInfo } from "@/data/bundles";
 import type { MeatType } from "@/data/meatCategories";
 
-const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+export function getApiBase() {
+  if (typeof window !== "undefined") {
+    return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
+  }
+  return (
+    process.env.API_URL ||
+    process.env.NEXT_PUBLIC_API_URL ||
+    "http://127.0.0.1:3001"
+  );
+}
 
 type ApiProduct = {
   id: string;
@@ -44,9 +53,7 @@ function normalizeBundle(bundle: BundleInfo | undefined): BundleInfo | undefined
 function normalizeProduct(raw: ApiProduct): Product {
   const images = raw.images?.length ? raw.images : raw.image ? [raw.image] : [];
   const image = raw.image || images[0] || "";
-  const category = (
-    raw.bundle ? "bundles" : raw.category || "beef"
-  ) as Product["category"];
+  const category = raw.bundle ? "bundles" : raw.category || "beef";
 
   return {
     id: String(raw.id),
@@ -78,8 +85,9 @@ export type FetchProductsParams = {
   q?: string;
 };
 
-export async function fetchProducts(
+async function requestProducts(
   params?: FetchProductsParams,
+  init?: RequestInit,
 ): Promise<Product[]> {
   const search = new URLSearchParams();
   if (params?.category) search.set("category", params.category);
@@ -87,9 +95,7 @@ export async function fetchProducts(
   if (params?.q) search.set("q", params.q);
   const qs = search.toString();
 
-  const res = await fetch(`${API}/api/products${qs ? `?${qs}` : ""}`, {
-    next: { revalidate: 60 },
-  });
+  const res = await fetch(`${getApiBase()}/api/products${qs ? `?${qs}` : ""}`, init);
 
   if (!res.ok) {
     throw new Error(`Failed to fetch products (${res.status})`);
@@ -99,9 +105,34 @@ export async function fetchProducts(
   return data.map(normalizeProduct);
 }
 
+/** Server-side fetch (SSR / RSC) */
+export async function fetchProducts(params?: FetchProductsParams): Promise<Product[]> {
+  return requestProducts(params, { next: { revalidate: 60 } });
+}
+
+/** Client-side fetch (browser) */
+export async function fetchProductsClient(
+  params?: FetchProductsParams,
+): Promise<Product[]> {
+  return requestProducts(params, { cache: "no-store" });
+}
+
 export async function fetchProductBySlug(slug: string): Promise<Product | null> {
-  const res = await fetch(`${API}/api/products/${encodeURIComponent(slug)}`, {
+  const res = await fetch(`${getApiBase()}/api/products/${encodeURIComponent(slug)}`, {
     next: { revalidate: 60 },
+  });
+
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    throw new Error(`Failed to fetch product (${res.status})`);
+  }
+
+  return normalizeProduct((await res.json()) as ApiProduct);
+}
+
+export async function fetchProductBySlugClient(slug: string): Promise<Product | null> {
+  const res = await fetch(`${getApiBase()}/api/products/${encodeURIComponent(slug)}`, {
+    cache: "no-store",
   });
 
   if (res.status === 404) return null;

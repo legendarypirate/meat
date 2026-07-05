@@ -15,7 +15,7 @@ export type Product = {
   badge?: string;
   badgeVariant?: "green" | "dark" | "olive";
   grade?: string;
-  category: "beef" | "dry-aged" | "bundles";
+  category: string;
   meatTypes?: MeatType[];
   cutType?: string;
   weight?: string;

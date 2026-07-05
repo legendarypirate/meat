@@ -4,18 +4,17 @@ import { Footer } from "@/components/layout/Footer";
 import { Newsletter } from "@/components/layout/Newsletter";
 import { Container } from "@/components/ui/Container";
 import { BundlesPageClient } from "@/components/products/BundlesPageClient";
-import { fetchProducts } from "@/lib/api";
 
-export default async function BundlesPage() {
-  const products = await fetchProducts().catch(() => []);
+export const dynamic = "force-dynamic";
 
+export default function BundlesPage() {
   return (
     <>
       <HeaderWrapper />
       <main className="py-10 lg:py-14">
         <Container>
           <Suspense fallback={<p className="text-muted">Ачааллаж байна...</p>}>
-            <BundlesPageClient products={products} />
+            <BundlesPageClient />
           </Suspense>
         </Container>
       </main>

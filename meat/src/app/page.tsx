@@ -10,8 +10,13 @@ import {
 import { FeaturedProducts, FeaturedBundles } from "@/components/products/ProductCard";
 import { fetchProducts } from "@/lib/api";
 
+export const dynamic = "force-dynamic";
+
 export default async function HomePage() {
-  const products = await fetchProducts().catch(() => []);
+  const products = await fetchProducts().catch((error) => {
+    console.error("Home page: failed to fetch products", error);
+    return [];
+  });
 
   return (
     <>

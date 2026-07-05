@@ -1,19 +1,47 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ProductCard } from "@/components/products/ProductCard";
 import type { Product } from "@/types/product";
+import { fetchProductsClient } from "@/lib/api";
 import { filterProducts, type SortOption } from "@/lib/products";
 
 const ITEMS_PER_PAGE = 6;
 
-export function BundlesPageClient({ products }: { products: Product[] }) {
+export function BundlesPageClient() {
   const searchParams = useSearchParams();
   const queryParam = searchParams.get("q") ?? "";
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState<SortOption>("featured");
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    fetchProductsClient({ category: "bundles", q: queryParam || undefined })
+      .then((data) => {
+        if (!cancelled) setProducts(data);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setError(err instanceof Error ? err.message : "Алдаа гарлаа");
+          setProducts([]);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [queryParam]);
 
   const filtered = useMemo(
     () =>
@@ -22,7 +50,7 @@ export function BundlesPageClient({ products }: { products: Product[] }) {
         sort,
         query: queryParam,
       }),
-    [sort, queryParam],
+    [products, sort, queryParam],
   );
 
   const totalPages = Math.max(1, Math.ceil(filtered.length / ITEMS_PER_PAGE));
@@ -52,9 +80,15 @@ export function BundlesPageClient({ products }: { products: Product[] }) {
       <div>
         <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <p className="text-sm text-muted">
-            Нийт{" "}
-            <span className="font-semibold text-foreground">{filtered.length}</span>{" "}
-            багц
+            {loading ? (
+              "Ачааллаж байна..."
+            ) : (
+              <>
+                Нийт{" "}
+                <span className="font-semibold text-foreground">{filtered.length}</span>{" "}
+                багц
+              </>
+            )}
           </p>
           <select
             value={sort}
@@ -70,7 +104,17 @@ export function BundlesPageClient({ products }: { products: Product[] }) {
           </select>
         </div>
 
-        {paginated.length === 0 ? (
+        {error && (
+          <div className="mb-6 rounded-xl border border-destructive/30 bg-destructive/10 p-4 text-sm text-destructive">
+            API холболт амжилтгүй: {error}
+          </div>
+        )}
+
+        {loading ? (
+          <div className="rounded-xl bg-surface py-16 text-center text-muted">
+            Багц ачааллаж байна...
+          </div>
+        ) : paginated.length === 0 ? (
           <div className="rounded-xl bg-surface py-16 text-center">
             <p className="text-lg font-semibold">Багц олдсонгүй</p>
           </div>
@@ -82,7 +126,7 @@ export function BundlesPageClient({ products }: { products: Product[] }) {
           </div>
         )}
 
-        {totalPages > 1 && (
+        {!loading && totalPages > 1 && (
           <div className="mt-12 flex items-center justify-center gap-2">
             <button
               type="button"
