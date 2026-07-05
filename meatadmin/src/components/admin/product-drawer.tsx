@@ -269,21 +269,31 @@ export function ProductDrawer({ open, productId, variant, onClose, onSaved }: Pr
                     <div className="grid grid-cols-2 gap-4">
                       <div className="grid gap-2">
                         <Label>Ангилал</Label>
-                        <Select
-                          value={form.categorySlug}
-                          onValueChange={(v) => update("categorySlug", v)}
-                        >
-                          <SelectTrigger>
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {visibleCategories.map((c) => (
-                              <SelectItem key={c.slug} value={c.slug}>
-                                {c.name}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
+                        {visibleCategories.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">
+                            Ангилал байхгүй. Эхлээд Ангилал хуудас дээр нэмнэ үү.
+                          </p>
+                        ) : (
+                          <Select
+                            value={
+                              visibleCategories.some((c) => c.slug === form.categorySlug)
+                                ? form.categorySlug
+                                : visibleCategories[0].slug
+                            }
+                            onValueChange={(v) => update("categorySlug", v)}
+                          >
+                            <SelectTrigger>
+                              <SelectValue placeholder="Ангилал сонгох" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {visibleCategories.map((c) => (
+                                <SelectItem key={c.slug} value={c.slug}>
+                                  {c.name}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        )}
                       </div>
                       <div className="grid gap-2">
                         <Label htmlFor="weight">Жин</Label>
