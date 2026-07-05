@@ -204,7 +204,7 @@ function RegularProductDetail({ product }: ProductDetailProps) {
       </div>
 
       <div className="mt-16 lg:mt-24">
-        <h2 className="text-2xl font-bold lg:text-3xl">Мах бэлтгэгчийн сонголт</h2>
+        <h2 className="text-2xl font-bold lg:text-3xl">Хэрэглэгчдийн сонголт</h2>
         <p className="mt-4 max-w-3xl text-sm leading-relaxed text-muted">
           {product.longDescription}
         </p>

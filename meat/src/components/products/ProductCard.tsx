@@ -151,7 +151,7 @@ export function FeaturedProducts({ products }: { products: Product[] }) {
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div className="mb-10 max-w-2xl">
           <h2 className="text-3xl font-bold lg:text-4xl">
-            Мах бэлтгэгчийн сонголт
+            Хэрэглэгчдийн сонголт
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-muted">
             Манай мах бэлтгэгчид өдөр бүр шинээр сонгосон, хамгийн

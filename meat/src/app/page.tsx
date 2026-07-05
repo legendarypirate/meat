@@ -3,7 +3,6 @@ import { Footer } from "@/components/layout/Footer";
 import { Newsletter } from "@/components/layout/Newsletter";
 import {
   Hero,
-  CategoryGrid,
   MeatCategorySection,
   Testimonial,
 } from "@/components/home/HomeSections";
@@ -29,7 +28,6 @@ export default async function HomePage() {
       <HeaderWrapper variant="home" showSearch />
       <main>
         <Hero />
-        <CategoryGrid />
         <MeatCategorySection categories={categories} />
         <FeaturedProducts products={products} />
         <FeaturedBundles products={products} />
