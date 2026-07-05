@@ -14,9 +14,21 @@ const IMG = {
 };
 
 export const categories = [
-  { slug: "beef", name: "Үхрийн мах" },
-  { slug: "dry-aged", name: "Удаан хатаасан" },
-  { slug: "bundles", name: "Багц бүтээгдэхүүн" },
+  {
+    slug: "beef",
+    name: "Үхрийн мах",
+    image: IMG.meatCounter,
+  },
+  {
+    slug: "dry-aged",
+    name: "Удаан хатаасан",
+    image: IMG.steakRibeye,
+  },
+  {
+    slug: "bundles",
+    name: "Багц бүтээгдэхүүн",
+    image: IMG.meatPrep,
+  },
 ];
 
 export const products = [

@@ -14,6 +14,7 @@ router.get("/", async (_req, res, next) => {
         id: c.id,
         slug: c.slug,
         name: c.name,
+        image: c.image ?? "",
         productCount: c.products?.length ?? 0,
       })),
     );
@@ -24,11 +25,11 @@ router.get("/", async (_req, res, next) => {
 
 router.post("/", async (req, res, next) => {
   try {
-    const { slug, name } = req.body;
+    const { slug, name, image } = req.body;
     if (!slug || !name) {
       return res.status(400).json({ error: "slug and name are required" });
     }
-    const category = await Category.create({ slug, name });
+    const category = await Category.create({ slug, name, image: image ?? null });
     res.status(201).json(category);
   } catch (error) {
     next(error);
@@ -42,6 +43,7 @@ router.put("/:id", async (req, res, next) => {
     await category.update({
       slug: req.body.slug ?? category.slug,
       name: req.body.name ?? category.name,
+      image: req.body.image !== undefined ? req.body.image || null : category.image,
     });
     res.json(category);
   } catch (error) {

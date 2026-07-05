@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { Pencil, Plus, Trash2 } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
+import { Loader2, Pencil, Plus, Trash2, Upload } from "lucide-react";
 import { api, type Category } from "@/lib/api";
 import { Button } from "@/components/ui/button";
 import {
@@ -32,7 +33,10 @@ export default function CategoriesPage() {
   const [editCat, setEditCat] = useState<Category | null>(null);
   const [slug, setSlug] = useState("");
   const [name, setName] = useState("");
+  const [image, setImage] = useState("");
+  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   async function load() {
     try {
@@ -53,6 +57,7 @@ export default function CategoriesPage() {
     setEditCat(null);
     setSlug("");
     setName("");
+    setImage("");
     setOpen(true);
   }
 
@@ -60,16 +65,32 @@ export default function CategoriesPage() {
     setEditCat(cat);
     setSlug(cat.slug);
     setName(cat.name);
+    setImage(cat.image ?? "");
     setOpen(true);
+  }
+
+  async function handleImageUpload(files: FileList | null) {
+    const file = files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const result = await api.uploadImage(file);
+      setImage(result.url);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "Зураг upload хийхэд алдаа гарлаа");
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
   }
 
   async function handleSave() {
     setSaving(true);
     try {
       if (editCat) {
-        await api.updateCategory(editCat.id, { slug, name });
+        await api.updateCategory(editCat.id, { slug, name, image });
       } else {
-        await api.createCategory({ slug, name });
+        await api.createCategory({ slug, name, image });
       }
       setOpen(false);
       await load();
@@ -114,6 +135,44 @@ export default function CategoriesPage() {
                 <Label htmlFor="cat-name">Нэр</Label>
                 <Input id="cat-name" value={name} onChange={(e) => setName(e.target.value)} />
               </div>
+              <div className="grid gap-2">
+                <Label>Зураг</Label>
+                {image ? (
+                  <div className="relative aspect-video overflow-hidden rounded-lg border bg-muted">
+                    <Image src={image} alt="" fill className="object-cover" unoptimized />
+                    <Button
+                      type="button"
+                      variant="destructive"
+                      size="icon"
+                      className="absolute right-2 top-2 h-8 w-8"
+                      onClick={() => setImage("")}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => fileRef.current?.click()}
+                    disabled={uploading}
+                    className="flex h-32 w-full items-center justify-center gap-2 rounded-lg border border-dashed text-sm text-muted-foreground hover:bg-muted/50"
+                  >
+                    {uploading ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Upload className="h-4 w-4" />
+                    )}
+                    Зураг upload хийх
+                  </button>
+                )}
+                <input
+                  ref={fileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={(e) => handleImageUpload(e.target.files)}
+                />
+              </div>
             </div>
             <DialogFooter>
               <Button onClick={handleSave} disabled={saving || !slug || !name}>
@@ -135,6 +194,7 @@ export default function CategoriesPage() {
             <Table>
               <TableHeader>
                 <TableRow>
+                  <TableHead>Зураг</TableHead>
                   <TableHead>Нэр</TableHead>
                   <TableHead>Slug</TableHead>
                   <TableHead>Бүтээгдэхүүн</TableHead>
@@ -144,6 +204,15 @@ export default function CategoriesPage() {
               <TableBody>
                 {categories.map((c) => (
                   <TableRow key={c.id}>
+                    <TableCell>
+                      {c.image ? (
+                        <div className="relative h-10 w-14 overflow-hidden rounded border bg-muted">
+                          <Image src={c.image} alt="" fill className="object-cover" unoptimized />
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground">—</span>
+                      )}
+                    </TableCell>
                     <TableCell className="font-medium">{c.name}</TableCell>
                     <TableCell className="text-muted-foreground">{c.slug}</TableCell>
                     <TableCell>{c.productCount ?? 0}</TableCell>

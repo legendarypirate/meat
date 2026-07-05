@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { FillImage } from "@/components/ui/FillImage";
 import { images } from "@/data/images";
 import { heroSecondaryNav } from "@/data/navigation";
-import { meatCategories } from "@/data/meatCategories";
+import { categoryHref, type StoreCategory } from "@/lib/api";
 
 export function Hero() {
   return (
@@ -150,7 +150,7 @@ export function CategoryGrid() {
   );
 }
 
-export function MeatCategorySection() {
+export function MeatCategorySection({ categories }: { categories: StoreCategory[] }) {
   return (
     <section id="categories" className="bg-white py-16 lg:py-24">
       <Container>
@@ -176,33 +176,34 @@ export function MeatCategorySection() {
           </Link>
         </div>
 
-        <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {meatCategories.map((cat) => (
-            <Link
-              key={cat.slug}
-              href={cat.href}
-              className="group relative min-h-[280px] overflow-hidden rounded-2xl lg:min-h-[320px]"
-            >
-              <FillImage
-                src={cat.image}
-                alt={cat.name}
-                size="card"
-                className="object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
-              <div className="absolute inset-0 flex flex-col justify-end p-6">
-                <h3 className="text-2xl font-bold text-white">{cat.name}</h3>
-                <p className="mt-2 text-sm leading-relaxed text-white/80">
-                  {cat.description}
-                </p>
-                <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-green-300 opacity-0 transition-opacity group-hover:opacity-100">
-                  Үзэх
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </span>
-              </div>
-            </Link>
-          ))}
-        </div>
+        {categories.length === 0 ? (
+          <p className="text-sm text-muted">Ангилал одоогоор байхгүй байна.</p>
+        ) : (
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {categories.map((cat) => (
+              <Link
+                key={cat.slug}
+                href={categoryHref(cat.slug)}
+                className="group relative min-h-[280px] overflow-hidden rounded-2xl lg:min-h-[320px]"
+              >
+                <FillImage
+                  src={cat.image}
+                  alt={cat.name}
+                  size="card"
+                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
+                <div className="absolute inset-0 flex flex-col justify-end p-6">
+                  <h3 className="text-2xl font-bold text-white">{cat.name}</h3>
+                  <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-green-300 opacity-0 transition-opacity group-hover:opacity-100">
+                    Үзэх
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </span>
+                </div>
+              </Link>
+            ))}
+          </div>
+        )}
       </Container>
     </section>
   );

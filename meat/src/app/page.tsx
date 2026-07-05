@@ -8,15 +8,21 @@ import {
   Testimonial,
 } from "@/components/home/HomeSections";
 import { FeaturedProducts, FeaturedBundles } from "@/components/products/ProductCard";
-import { fetchProducts } from "@/lib/api";
+import { fetchProducts, fetchCategories } from "@/lib/api";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const products = await fetchProducts().catch((error) => {
-    console.error("Home page: failed to fetch products", error);
-    return [];
-  });
+  const [products, categories] = await Promise.all([
+    fetchProducts().catch((error) => {
+      console.error("Home page: failed to fetch products", error);
+      return [];
+    }),
+    fetchCategories().catch((error) => {
+      console.error("Home page: failed to fetch categories", error);
+      return [];
+    }),
+  ]);
 
   return (
     <>
@@ -24,7 +30,7 @@ export default async function HomePage() {
       <main>
         <Hero />
         <CategoryGrid />
-        <MeatCategorySection />
+        <MeatCategorySection categories={categories} />
         <FeaturedProducts products={products} />
         <FeaturedBundles products={products} />
         <Testimonial />

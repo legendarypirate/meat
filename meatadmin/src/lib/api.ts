@@ -22,6 +22,7 @@ export type Category = {
   id: number;
   slug: string;
   name: string;
+  image?: string;
   productCount?: number;
 };
 
@@ -141,13 +142,13 @@ export const api = {
 
   getCategories: () => request<Category[]>("/api/admin/categories"),
 
-  createCategory: (data: { slug: string; name: string }) =>
+  createCategory: (data: { slug: string; name: string; image?: string }) =>
     request<Category>("/api/admin/categories", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
-  updateCategory: (id: number, data: { slug?: string; name?: string }) =>
+  updateCategory: (id: number, data: { slug?: string; name?: string; image?: string }) =>
     request<Category>(`/api/admin/categories/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),

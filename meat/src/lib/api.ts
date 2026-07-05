@@ -142,3 +142,26 @@ export async function fetchProductBySlugClient(slug: string): Promise<Product | 
 
   return normalizeProduct((await res.json()) as ApiProduct);
 }
+
+export type StoreCategory = {
+  id: number;
+  slug: string;
+  name: string;
+  image: string;
+};
+
+export async function fetchCategories(): Promise<StoreCategory[]> {
+  const res = await fetch(`${getApiBase()}/api/categories`, {
+    next: { revalidate: 60 },
+  });
+
+  if (!res.ok) {
+    throw new Error(`Failed to fetch categories (${res.status})`);
+  }
+
+  return (await res.json()) as StoreCategory[];
+}
+
+export function categoryHref(slug: string): string {
+  return slug === "bundles" ? "/bundles" : `/products?category=${slug}`;
+}

@@ -5,10 +5,13 @@ export default async function seed() {
   const categoryMap = {};
 
   for (const cat of categories) {
-    const [record] = await Category.findOrCreate({
+    const [record, created] = await Category.findOrCreate({
       where: { slug: cat.slug },
       defaults: cat,
     });
+    if (!created && cat.image) {
+      await record.update({ image: cat.image });
+    }
     categoryMap[cat.slug] = record.id;
   }
 

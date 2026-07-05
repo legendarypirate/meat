@@ -18,6 +18,10 @@ const Category = sequelize.define(
       type: DataTypes.STRING(100),
       allowNull: false,
     },
+    image: {
+      type: DataTypes.STRING(500),
+      allowNull: true,
+    },
   },
   { tableName: "categories" },
 );
