@@ -90,7 +90,7 @@ export function ProductsPageClient() {
 
   const activeCategoryLabel = typeParam
     ? meatCategories.find((c) => c.slug === typeParam)?.name
-    : categoryParam
+    : categoryParam && categoryParam !== "bundles"
       ? categoryTitles[categoryParam]
       : null;
 
