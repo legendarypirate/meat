@@ -45,8 +45,28 @@ npm run db:sync
 
 ```bash
 npm run dev    # development with auto-reload
-npm start      # production
+npm start      # production (uses server.js)
 ```
+
+## Production (PM2)
+
+From the `server/` directory:
+
+```bash
+npm install
+cp .env.example .env   # set DB_HOST=127.0.0.1 on Linux (not /tmp)
+npm run db:sync
+mkdir -p logs
+pm2 delete backm-api 2>/dev/null || true
+pm2 start ecosystem.config.cjs
+pm2 save
+pm2 logs backm-api
+curl http://127.0.0.1:3001/api/health
+```
+
+**Important:** `DB_HOST=/tmp` is for macOS Postgres.app only. On Ubuntu use `DB_HOST=127.0.0.1`.
+
+Do **not** run `pm2 start src/app.js` from the repo root — use `ecosystem.config.cjs` inside `server/` so `.env` loads correctly.
 
 ## API Endpoints
 
